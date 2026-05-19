@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Auction Analyzer - Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #38a169;
+        }
+
+        .test-section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .test-button {
+            background: linear-gradient(45deg, #38a169, #48bb78);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+        }
+
+        .test-results {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .success {
+            color: #38a169;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+
+        .info {
+            color: #3182ce;
+            font-weight: 600;
+        }
+
+        pre {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Art Auction Analyzer Test Suite</h1>
+
+        <div class="test-section">
+            <h2>🎨 Sample Artwork Analysis Tests</h2>
+            <p>Test the analyzer with pre-loaded sample data:</p>
+            <button class="test-button" onclick="testPicasso()">Test Picasso Analysis</button>
+            <button class="test-button" onclick="testMonet()">Test Monet Analysis</button>
+            <button class="test-button" onclick="testWarhol()">Test Warhol Analysis</button>
+            <button class="test-button" onclick="testVanGogh()">Test Van Gogh Analysis</button>
+            <div id="analysisResults" class="test-results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>💾 Database Tests</h2>
+            <p>Test database connectivity and sample data:</p>
+            <button class="test-button" onclick="testDatabase()">Check Sample Data</button>
+            <button class="test-button" onclick="addTestRecord()">Add Test Record</button>
+            <div id="databaseResults" class="test-results" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 API Endpoint Tests</h2>
+            <p>Test all API endpoints:</p>
+            <button class="test-button" onclick="testAnalyzeEndpoint()">Test /analyze</button>
+            <button class="test-button" onclick="testAddRecordEndpoint()">Test /add_record</button>
+            <div id="apiResults" class="test-results" style="display: none;"></div>
+        </div>
+
+        <div class="back-link">
+            <a href="/">← Back to Art Auction Analyzer</a>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return `$${(amount/1000000).toFixed(2)}M`;
+            } else if (amount >= 1000) {
+                return `$${(amount/1000).toFixed(0)}K`;
+            } else {
+                return `$${amount.toLocaleString()}`;
+            }
+        }
+
+        function showResults(elementId, content) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content;
+            element.style.display = 'block';
+        }
+
+        async function testAnalysis(artistData) {
+            try {
+                showResults('analysisResults', '<div class="info">🔄 Running analysis...</div>');
+
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(artistData)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    showResults('analysisResults', `
+                        <div class="error">❌ Analysis Failed: ${result.error}</div>
+                    `);
+                    return;
+                }
+
+                const resultHtml = `
+                    <div class="success">✅ Analysis Successful!</div>
+                    <h3>Results for ${result.artist}:</h3>
+                    <div style="margin: 15px 0;">
+                        <strong>📏 Dimensions:</strong> ${result.dimensions}<br>
+                        <strong>📊 Comparable Sales:</strong> ${result.comparable_sales}<br>
+                        <strong>💰 Final Estimate:</strong> <span style="color: #38a169; font-weight: bold;">${formatCurrency(result.final_estimate)}</span><br>
+                        <strong>🎯 Target Bid:</strong> <span style="color: #3182ce; font-weight: bold;">${formatCurrency(result.bidding_strategy.target_bid)}</span><br>
+                        <strong>📈 Market Trend:</strong> ${result.market_analysis.trend_direction.toUpperCase()} (${result.market_analysis.trend_strength})<br>
+                        <strong>🔮 10-Year Value:</strong> <span style="color: #805ad5; font-weight: bold;">${formatCurrency(result.future_projection.estimated_value_10_years)}</span><br>
+                        <strong>📊 Projected ROI:</strong> ${result.future_projection.projected_roi}
+                    </div>
+                `;
+
+                showResults('analysisResults', resultHtml);
+
+            } catch (error) {
+                showResults('analysisResults', `
+                    <div class="error">❌ Test Failed: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testPicasso() {
+            await testAnalysis({
+                artist: 'Pablo Picasso',
+                media: 'Oil on canvas',
+                width: 24,
+                height: 30,
+                auction_house: "Christie's",
+                auction_date: '2024-05-15',
+                provenance: 4,
+                condition: 4,
+                signature: true,
+                dated: true,
+                exhibition: true,
+                literature: true
+            });
+        }
+
+        async function testMonet() {
+            await testAnalysis({
+                artist: 'Claude Monet',
+                media: 'Oil on canvas',
+                width: 25,
+                height: 30,
+                auction_house: "Sotheby's",
+                auction_date: '2024-11-15',
+                provenance: 5,
+                condition: 5,
+                signature: true,
+                dated: false,
+                exhibition: true,
+                literature: true
+            });
+        }
+
+        async function testWarhol() {
+            await testAnalysis({
+                artist: 'Andy Warhol',
+                media: 'Screenprint',
+                width: 32,
+                height: 32,
+                auction_house: 'Phillips',
+                auction_date: '2024-09-20',
+                provenance: 3,
+                condition: 5,
+                signature: true,
+                dated: true,
+                exhibition: false,
+                literature: false
+            });
+        }
+
+        async function testVanGogh() {
+            await testAnalysis({
+                artist: 'Vincent van Gogh',
+                media: 'Oil on canvas',
+                width: 20,
+                height: 24,
+                auction_house: "Christie's",
+                auction_date: '2024-03-08',
+                provenance: 5,
+                condition: 3,
+                signature: true,
+                dated: true,
+                exhibition: true,
+                literature: true
+            });
+        }
+
+        async function testDatabase() {
+            try {
+                showResults('databaseResults', '<div class="info">🔄 Checking database...</div>');
+
+                // Test by trying to get Picasso records
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        artist: 'Pablo Picasso',
+                        media: 'Oil on canvas',
+                        width: 24,
+                        height: 30,
+                        auction_house: "Christie's",
+                        auction_date: '2024-05-15',
+                        provenance: 3,
+                        condition: 4,
+                        signature: true,
+                        dated: false,
+                        exhibition: false,
+                        literature: false
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.comparable_sales && result.comparable_sales > 0) {
+                    showResults('databaseResults', `
+                        <div class="success">✅ Database Connection Successful!</div>
+                        <div>Found ${result.comparable_sales} records for Pablo Picasso</div>
+                        <div>Sample data is loaded and accessible</div>
+                    `);
+                } else {
+                    showResults('databaseResults', `
+                        <div class="error">❌ Database Issue: No sample data found</div>
+                    `);
+                }
+
+            } catch (error) {
+                showResults('databaseResults', `
+                    <div class="error">❌ Database Test Failed: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function addTestRecord() {
+            try {
+                showResults('databaseResults', '<div class="info">🔄 Adding test record...</div>');
+
+                const response = await fetch('/add_record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        artist: 'Test Artist',
+                        title: 'Test Artwork',
+                        media: 'Oil on canvas',
+                        width: 20,
+                        height: 24,
+                        date: '2024-01-01',
+                        hammer_price: 50000,
+                        estimate_low: 40000,
+                        estimate_high: 60000,
+                        auction_house: 'Test Auction House',
+                        provenance_quality: 3,
+                        condition_rating: 4,
+                        signature: true,
+                        dated_work: true,
+                        exhibition_history: false,
+                        literature: false
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResults('databaseResults', `
+                        <div class="success">✅ Record Added Successfully!</div>
+                        <div>${result.message}</div>
+                    `);
+                } else {
+                    showResults('databaseResults', `
+                        <div class="error">❌ Failed to Add Record: ${result.error}</div>
+                    `);
+                }
+
+            } catch (error) {
+                showResults('databaseResults', `
+                    <div class="error">❌ Add Record Test Failed: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testAnalyzeEndpoint() {
+            try {
+                showResults('apiResults', '<div class="info">🔄 Testing /analyze endpoint...</div>');
+
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        artist: 'Pablo Picasso',
+                        media: 'Oil on canvas',
+                        width: 24,
+                        height: 30,
+                        auction_house: "Christie's",
+                        auction_date: '2024-05-15',
+                        provenance: 3,
+                        condition: 4,
+                        signature: true,
+                        dated: false,
+                        exhibition: false,
+                        literature: false
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResults('apiResults', `
+                        <div class="success">✅ /analyze endpoint working correctly!</div>
+                        <div>Status: ${response.status}</div>
+                        <div>Response includes: ${Object.keys(result).join(', ')}</div>
+                    `);
+                } else {
+                    showResults('apiResults', `
+                        <div class="error">❌ /analyze endpoint failed with status: ${response.status}</div>
+                    `);
+                }
+
+            } catch (error) {
+                showResults('apiResults', `
+                    <div class="error">❌ API Test Failed: ${error.message}</div>
+                `);
+            }
+        }
+
+        async function testAddRecordEndpoint() {
+            try {
+                showResults('apiResults', '<div class="info">🔄 Testing /add_record endpoint...</div>');
+
+                const response = await fetch('/add_record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        artist: 'API Test Artist',
+                        title: 'API Test Artwork',
+                        media: 'Watercolor',
+                        width: 15,
+                        height: 20,
+                        date: '2024-01-15',
+                        hammer_price: 25000,
+                        estimate_low: 20000,
+                        estimate_high: 30000,
+                        auction_house: 'API Test House',
+                        provenance_quality: 2,
+                        condition_rating: 3,
+                        signature: false,
+                        dated_work: false,
+                        exhibition_history: false,
+                        literature: false
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showResults('apiResults', `
+                        <div class="success">✅ /add_record endpoint working correctly!</div>
+                        <div>Status: ${response.status}</div>
+                        <div>Message: ${result.message}</div>
+                    `);
+                } else {
+                    showResults('apiResults', `
+                        <div class="error">❌ /add_record endpoint failed with status: ${response.status}</div>
+                    `);
+                }
+
+            } catch (error) {
+                showResults('apiResults', `
+                    <div class="error">❌ API Test Failed: ${error.message}</div>
+                `);
+            }
+        }
+    </script>
+</body>
+</html>
